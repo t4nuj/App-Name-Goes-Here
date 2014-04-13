@@ -71,6 +71,14 @@ public class JsonGetter {
                 httpEntity = httpResponse.getEntity();
                 response = EntityUtils.toString(httpEntity);
             }
+            else if (type == ID)
+            {
+                String Encoded_Search_Term = URLEncoder.encode(Search_Term,"UTF-8");
+                HttpGet httpGet = new HttpGet(url_id+Encoded_Search_Term);
+                httpResponse = httpClient.execute(httpGet);
+                httpEntity = httpResponse.getEntity();
+                response = EntityUtils.toString(httpEntity);
+            }
 
 
         }

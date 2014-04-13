@@ -42,18 +42,19 @@ public class jsonparser extends ListActivity {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             LinearLayout linearLayout =(LinearLayout) view;
-            String genre_name = ((TextView) linearLayout.findViewById(R.id.year)).getText().toString();
+            String imdbID = ((TextView) linearLayout.findViewById(R.id.imdbID)).getText().toString();
             Intent intent;
             intent = new Intent(c , MainActivity2.class );
-            intent.putExtra("Genre_Selected", genre_name);
+            intent.putExtra("ImdbID", imdbID);
             startActivity(intent);
         }
     };
 
     //Tags For the keys of OMDB API JSON object received
     protected static final String TAG_GENRE = "genres";
-    protected static final String TAG_TITLE = "name";
-    protected static final String TAG_ID = "id";
+    protected static final String TAG_SEARCH = "Search";
+    protected static final String TAG_TITLE = "Title";
+    protected static final String TAG_ID = "imdbID";
     protected static final String TAG_YEAR =  "Year";
     protected static final String TAG_RESPONSE = "Response";
 
@@ -118,7 +119,7 @@ public class jsonparser extends ListActivity {
         protected Void  doInBackground(Void... params)
         {
             JsonGetter jsonGetter = new JsonGetter();
-            String jsonResponse = jsonGetter.getJson(JsonGetter.GENRE,search_term);
+            String jsonResponse = jsonGetter.getJson(JsonGetter.SEARCH,search_term);
             Log.d("Response : ",">" + jsonResponse);
             JSONObject Search_Results = new JSONObject();
             if (jsonResponse!=null)
@@ -131,20 +132,20 @@ public class jsonparser extends ListActivity {
                 try {
                     if (!((Search_Results.has(TAG_RESPONSE)) && (Search_Results.getString(TAG_RESPONSE).equals("false"))))
                     {   try {
-                                JSONArray Genre_List = Search_Results.getJSONArray(TAG_GENRE);
-                                for (int i = 0; i<Genre_List.length(); i++)
+                                JSONArray Movie_List = Search_Results.getJSONArray(TAG_SEARCH);
+                                for (int i = 0; i<Movie_List.length(); i++)
                                 {
-                                    JSONObject genre = (JSONObject) Genre_List.get(i);
-                                    String id = genre.getString(TAG_ID);
-                                    String title = genre.getString(TAG_TITLE);
-                                    //String year = movie.getString(TAG_YEAR);
+                                    JSONObject movie = (JSONObject) Movie_List.get(i);
+                                    String id = movie.getString(TAG_ID);
+                                    String title = movie.getString(TAG_TITLE);
+                                    String year = movie.getString(TAG_YEAR);
 
                                     //Temporary list to store values from current JSON object
                                     HashMap<String,String> temporary_list = new HashMap<String, String>();
 
                                     temporary_list.put(TAG_ID,id);
                                     temporary_list.put(TAG_TITLE,title);
-                                    //temporary_list.put(TAG_YEAR,year);
+                                    temporary_list.put(TAG_YEAR,year);
 
                                     MovieList.add(temporary_list);
 
@@ -174,7 +175,8 @@ public class jsonparser extends ListActivity {
                     p.dismiss();
                /* }*/
 
-            ListAdapter listAdapter = new SimpleAdapter(jsonparser.this,MovieList,R.layout.list_item,new String[] {TAG_TITLE,TAG_ID},new int[] {R.id.title,R.id.year});
+            ListAdapter listAdapter = new SimpleAdapter(jsonparser.this,MovieList,R.layout.list_item,new String[] {TAG_TITLE,TAG_YEAR,TAG_ID},new int[] {R.id.title,R.id.year,R.id.imdbID});
+
             setListAdapter(listAdapter);
             listView.setClickable(true);
 

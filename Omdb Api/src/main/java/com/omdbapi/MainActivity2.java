@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -24,34 +26,47 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity2 extends ListActivity{
+public class MainActivity2 extends Activity{
 
-    TextView textView;
+    TextView title_of_movie;
+    TextView plot_of_movie;
+    ImageView movie_poster;
     ProgressDialog p;
-    ListView listView;
+    Uri uri;
+    //tags
+    String imdbID;
+    String TAG_POSTER = "Poster";
+    String TAG_YEAR = "Year";
+    String TAG_TITLE = "Title";
+    String TAG_PLOT = "Plot";
 
-    String SELECTED_GENRE;
-    String TAG_RESULTS = "results";
-    String TAG_ID = "id";
-    String TAG_TITLE = "title";
 
-    ArrayList<HashMap<String,String> > GenreList;
+    //Actual data
+    String Movie_title;
+    String Movie_plot;
+    String Movie_year;
+    String Poster_url;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         Intent intent = getIntent();
-        SELECTED_GENRE = intent.getStringExtra("Genre_Selected");
+        imdbID = intent.getStringExtra("ImdbID");
 
-        listView = getListView();
+        title_of_movie = (TextView) findViewById(R.id.textView_title);
+        plot_of_movie = (TextView) findViewById(R.id.textView_Plot);
+        movie_poster = (ImageView) findViewById(R.id.imageView_Poster);
 
-        GenreList = new ArrayList<HashMap<String, String>>();
 
-        GetMoviesOfGenre getMoviesOfGenre = new GetMoviesOfGenre();
-        getMoviesOfGenre.execute();
+
+
+        GetMoviesById getMoviesById = new GetMoviesById();
+        getMoviesById.execute();
+
 
     }
 
@@ -76,7 +91,7 @@ public class MainActivity2 extends ListActivity{
         return super.onOptionsItemSelected(item);
     }
 
-    private class GetMoviesOfGenre extends AsyncTask<Void, Void, Void> {
+    private class GetMoviesById extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute()
@@ -91,37 +106,22 @@ public class MainActivity2 extends ListActivity{
         protected Void  doInBackground(Void... params)
         {
             JsonGetter jsonGetter = new JsonGetter();
-            String jsonResponse = jsonGetter.getJson(JsonGetter.SEARCH_GENRE,SELECTED_GENRE);
+            String jsonResponse = jsonGetter.getJson(JsonGetter.ID,imdbID);
             Log.d("Response : ", ">" + jsonResponse);
-            JSONObject Search_Results = new JSONObject();
+            JSONObject Request_Response = new JSONObject();
             if (jsonResponse!=null)
             {
                 try {
-                    Search_Results = new JSONObject(jsonResponse);
+                    Request_Response = new JSONObject(jsonResponse);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
 
                 try {
-                   JSONArray Genre_List = Search_Results.getJSONArray(TAG_RESULTS);
-                   for (int i = 0; i<Genre_List.length(); i++)
-                   {
-                       JSONObject genre = (JSONObject) Genre_List.get(i);
-                       String id = genre.getString(TAG_ID);
-                       String title = genre.getString(TAG_TITLE);
-                       //String year = movie.getString(TAG_YEAR);
-
-                       //Temporary list to store values from current JSON object
-                       HashMap<String,String> temporary_list = new HashMap<String, String>();
-
-                       temporary_list.put(TAG_ID,id);
-                       temporary_list.put(TAG_TITLE,title);
-                       //temporary_list.put(TAG_YEAR,year);
-
-                       GenreList.add(temporary_list);
-
-
-                   }
+                  Movie_title = Request_Response.getString(TAG_TITLE);
+                  Movie_plot = Request_Response.getString(TAG_PLOT);
+                  Movie_year = Request_Response.getString(TAG_YEAR);
+                  Poster_url = Request_Response.getString(TAG_POSTER);
                }
                catch (JSONException e)
                {
@@ -142,9 +142,12 @@ public class MainActivity2 extends ListActivity{
                 {*/
             p.dismiss();
                /* }*/
+            title_of_movie.setText(Movie_title);
+            plot_of_movie.setText(Movie_plot);
 
-            ListAdapter listAdapter = new SimpleAdapter(MainActivity2.this,GenreList,R.layout.list_item,new String[] {TAG_TITLE,TAG_ID},new int[] {R.id.title,R.id.year});
-            setListAdapter(listAdapter);
+            uri = Uri.parse(Poster_url);
+            movie_poster.setImageURI(uri);
+
 
         }
     }
