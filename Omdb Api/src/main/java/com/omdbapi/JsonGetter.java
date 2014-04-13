@@ -28,10 +28,12 @@ public class JsonGetter {
     String api_key = "api_key=5b94e6f9d10ce92e9e162b000951b505";
     String url_genre_movie = "/3/genre/";
     String url_movie = "/movies?";
+    String url_search = "http://www.omdbapi.com/?s=";
 
     public static final int SEARCH_GENRE = 1;
     public static  final int ID = 2;
     public static final int GENRE = 3;
+    public static  final int SEARCH = 4;
 
     public JsonGetter() {}
 
@@ -61,6 +63,15 @@ public class JsonGetter {
                 httpEntity = httpResponse.getEntity();
                 response = EntityUtils.toString(httpEntity);
             }
+            else if (type == SEARCH)
+            {
+                String Encoded_Search_Term = URLEncoder.encode(Search_Term,"UTF-8");
+                HttpGet httpGet = new HttpGet(url_search+Encoded_Search_Term);
+                httpResponse = httpClient.execute(httpGet);
+                httpEntity = httpResponse.getEntity();
+                response = EntityUtils.toString(httpEntity);
+            }
+
 
         }
                 catch (UnsupportedEncodingException e)
